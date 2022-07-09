@@ -1,0 +1,6 @@
+{
+  "glsllint.additionalStageAssociations": {
+    ".glsl": "frag",
+  },
+  "glsllint.fallBackStage": "frag",
+}
