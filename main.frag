@@ -8,6 +8,7 @@ struct IgoBoardConf {
   float boardStarRadiusPx;
   float boardStarPos;
   float boardCoordToPx;
+  float stoneRadiusPx;
 };
 
 vec3 DrawBoard(vec2 boardCoord, IgoBoardConf ibc, vec3 defaultColor){
@@ -45,6 +46,28 @@ vec3 DrawBoard(vec2 boardCoord, IgoBoardConf ibc, vec3 defaultColor){
   return ret;
 }
 
+bool isStonePixel(vec2 targetPosInBoardCoord, vec2 boardCoord, IgoBoardConf ibc){
+  return length(boardCoord - (floor(targetPosInBoardCoord) + vec2(0.5)))*ibc.boardCoordToPx < ibc.stoneRadiusPx;
+}
+
+vec3 DrawCandidateStone(vec2 boardCoord, vec2 mousePosInBoardCoord, IgoBoardConf ibc, 
+                        bool isBlackTurn, vec3 defaultColor){
+  if(mousePosInBoardCoord.x < 0.0
+      || mousePosInBoardCoord.y < 0.0
+      || mousePosInBoardCoord.x > ibc.boardNum
+      || mousePosInBoardCoord.y > ibc.boardNum){
+    return defaultColor;
+  }
+  if(isStonePixel(mousePosInBoardCoord, boardCoord, ibc)){
+    return mix(defaultColor, vec3(isBlackTurn ? 0.0 : 1.0), 0.6);
+  }
+  return defaultColor;
+}
+
+void UpdateBoard(){
+
+}
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
   vec3 backgroundColor = vec3(1.0);
@@ -57,19 +80,34 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   ibc.boardLineColor = vec3(0.1);
   ibc.boardLineWidth = 1.; // px
   ibc.boardSizePx = min(iResolution.x, iResolution.y) * 0.9;
-  ibc.boardStarRadiusPx = 3.0;
 
   // const values
   ibc.boardStarPos = ibc.boardNum == 19.0 ? 6.0
                      : ibc.boardNum == 13.0 ? 3.0
                      : ibc.boardNum == 9.0 ? 2.0 : 0.0;
   ibc.boardCoordToPx = ibc.boardSizePx/ibc.boardNum;
+  ibc.boardStarRadiusPx = ibc.boardCoordToPx * 0.15;
+  ibc.stoneRadiusPx = ibc.boardCoordToPx * 0.45;
 
   // [0, iResolution.xy] -> [-0.5*iResolution.xy, 0.5*iResolution.xy]
-  vec2 centerPxCoord = vec2(fragCoord.x - 0.5*iResolution.x, 0.5*iResolution.y - fragCoord.y);
+  vec4 centerPxCoord = vec4(fragCoord.x - 0.5*iResolution.x, 
+                            0.5*iResolution.y - fragCoord.y,
+                            iMouse.x - 0.5*iResolution.x, 
+                            0.5*iResolution.y - iMouse.y);
   // [-0.5*iResolution.xy, 0.5*iResolution.xy] -> [0, 19.0]
-  vec2 boardCoord = (centerPxCoord + vec2(ibc.boardSizePx*0.5)) / ibc.boardCoordToPx;
+  // boardCoord.xy is pixel, boardCoord.zw is mouse.xy
+  vec4 boardCoord = (centerPxCoord + vec4(ibc.boardSizePx*0.5)) / ibc.boardCoordToPx;
+  bool isMousePressing = iMouse.z > 0.0;
+  bool isMouseDown = iMouse.w > 0.0;
   
-  outPixel = DrawBoard(boardCoord, ibc, backgroundColor);
+  bool isBlackTurn = true;
+  outPixel = DrawBoard(boardCoord.xy, ibc, outPixel);
+
+  if(isMousePressing){
+    outPixel = DrawCandidateStone(boardCoord.xy, boardCoord.zw, ibc, isBlackTurn, outPixel);
+  } else {
+    outPixel = DrawCandidateStone(boardCoord.xy, boardCoord.zw, ibc, false, outPixel);
+    UpdateBoard();
+  }
   fragColor = vec4(outPixel, 1.0);
 }
