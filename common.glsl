@@ -64,7 +64,7 @@ vec3 DrawBoard(vec2 boardCoord, IgoBoardConf ibc, vec3 defaultColor){
   return ret;
 }
 
-bool isStonePixel(vec2 targetPosInBoardCoord, vec2 boardCoord, IgoBoardConf ibc){
+bool isPixelInStoneArea(vec2 targetPosInBoardCoord, vec2 boardCoord, IgoBoardConf ibc){
   return length(boardCoord - (floor(targetPosInBoardCoord) + vec2(0.5)))*ibc.boardCoordToPx < ibc.stoneRadiusPx;
 }
 
@@ -88,7 +88,7 @@ vec3 DrawCandidateStone(vec2 boardCoord, vec2 mousePosInBoardCoord, IgoBoardConf
       || mousePosInBoardCoord.y > ibc.boardNum){
     return defaultColor;
   }
-  if(isStonePixel(mousePosInBoardCoord, boardCoord, ibc)){
+  if(isPixelInStoneArea(mousePosInBoardCoord, boardCoord, ibc)){
     return mix(defaultColor, vec3(isBlackTurn ? 0.0 : 1.0), 0.6);
   }
   return defaultColor;
