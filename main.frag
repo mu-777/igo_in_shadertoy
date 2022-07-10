@@ -1,9 +1,13 @@
 #include "./common.glsl"
+#iChannel0 "file://./boardBuffer.frag"
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
   vec3 backgroundColor = vec3(1.0);
-  vec3 outPixel = backgroundColor;
+  vec3 outPixel = texelFetch(iChannel0, 
+                             ivec2(floor(fragCoord.x), floor(fragCoord.y)), 
+                             0).xyz;
+  // vec3 outPixel = backgroundColor;
 
   // Conf values
   IgoBoardConf ibc = CommonIgoConf(iResolution.xy);
