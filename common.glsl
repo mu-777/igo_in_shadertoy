@@ -1,4 +1,4 @@
-#define FetchBoardData(addr) texelFetch(iChannel0, addr, 0)
+#iChannel0 "file://./boardBuffer.frag"
 
 precision highp float;
 struct IgoBoardConf {
@@ -109,6 +109,10 @@ void UpdateBoard(){
 
 }
 
+vec4 FetchBoardBuffer(vec2 fragCoord){
+  return texelFetch(iChannel0, ivec2(fragCoord.xy), 0);
+}
+
 // [1, 一] ~ [19, 十九]
 ivec2 BoardCoordToBoardPos(vec2 posInBoardCoord){
   return ivec2(int(floor(posInBoardCoord.x + 1.0)),
@@ -129,3 +133,13 @@ ivec2 TexValToBoardBufCoord(vec2 texVal){
 }
 
 
+// [1, 一] ~ [19, 十九]
+vec4 GetBoardData(ivec2 boardPos){
+  return texelFetch(iChannel0, boardPos, 0);
+}
+
+vec4 GetCurrentStoneData(){
+  vec4 ret = texelFetch(iChannel0, ivec2(0,0), 0);
+  // ret.xy = vec2(TexValToBoardBufCoord(ret.xy));
+  return ret;
+}
