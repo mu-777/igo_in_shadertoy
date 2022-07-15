@@ -10,7 +10,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   vec2 boardCoord = FragCoordToBoardCoord(fragCoord.xy, iResolution.xy, ibc);
   vec4 currStoneData = FetchBoardData(ivec2(0,0));
 
-  vec2 mouseInBoardCoord = BoardCoordToBoardPos(TexValToBoardPos(currStoneData.xy));
+  ivec2 mouseBoardPos = BoardCoordToBoardPos(currStoneData.xy);
   float mouseState = currStoneData.z;
   bool isBlackTurn = (currStoneData.w == BOARD_STATE_BLACK);
 
@@ -20,7 +20,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
   outPixel = DrawBoard(boardCoord.xy, ibc, outPixel);
   if(mouseState == MOUSE_PRESSING){
-    outPixel = DrawCandidateStone(boardCoord.xy, mouseInBoardCoord.xy, ibc, 
+    outPixel = DrawCandidateStone(boardCoord.xy, mouseBoardPos.xy, ibc, 
                                   isBlackTurn, outPixel);
   }
 

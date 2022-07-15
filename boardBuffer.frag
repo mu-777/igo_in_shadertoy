@@ -4,7 +4,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
   IgoBoardConf ibc = CommonIgoConf(iResolution.xy);
 
-  if(!IsInBoard(fragCoord, ibc)){
+  if(!IsInBoard(fragCoord, ibc, 1.0)){
     return;
   }
 
@@ -25,8 +25,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
   // Store mouse info in [0, 0]
   if(ivec2(fragCoord.xy) == ivec2(0, 0)){
-    if(IsInBoard(mousePosInBoardCoord, ibc)){
-      outPixel.xy = BoardCoordToTexVal(mousePosInBoardCoord);
+    if(IsInBoard(mousePosInBoardCoord, ibc, 0.0)){
+      outPixel.xy = mousePosInBoardCoord;
     }
     
     outPixel.z = currMouse;

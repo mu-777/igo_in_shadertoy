@@ -41,12 +41,25 @@ IgoBoardConf CommonIgoConf(vec2 resolution){
   return ibc;
 }
 
+bool IsInBoard(vec2 posInBoardCoord, IgoBoardConf ibc, float offset){
+  return (posInBoardCoord.x >= 0.0-offset && posInBoardCoord.x <= ibc.boardNum+offset 
+          && posInBoardCoord.y >= 0.0-offset && posInBoardCoord.y <= ibc.boardNum+offset);
+}
+
+// (0.0, 0.0)~(19.0, 19.0) to [1, 一]~[19, 十九]
+ivec2 BoardCoordToBoardPos(vec2 posInBoardCoord){
+  return ivec2(int(floor(posInBoardCoord.x)) + 1,
+               int(floor(posInBoardCoord.y)) + 1);
+}
+// [1, 一]~[19, 十九] to (0.0, 0.0)~(19.0, 19.0)
+vec2 BoardPosToBoardCoord(ivec2 boardPos){
+  return vec2(boardPos) - vec2(0.5);
+}
+
 vec3 DrawBoard(vec2 boardCoord, IgoBoardConf ibc, vec3 defaultColor){
   vec3 ret = defaultColor;
   // Draw boardbase
-  float offset = 0.2;
-  if(boardCoord.x > 0.0-offset && boardCoord.x < ibc.boardNum+offset 
-      && boardCoord.y > 0.0-offset && boardCoord.y < ibc.boardNum+offset){
+  if(IsInBoard(boardCoord, ibc, 0.2)){
     ret = ibc.boardColor;
 
     // Draw star
@@ -77,11 +90,6 @@ vec3 DrawBoard(vec2 boardCoord, IgoBoardConf ibc, vec3 defaultColor){
   return ret;
 }
 
-bool IsInBoard(vec2 posInBoardCoord, IgoBoardConf ibc){
-  return (posInBoardCoord.x >= 0.0 && posInBoardCoord.x < ibc.boardNum 
-          && posInBoardCoord.y >= 0.0 && posInBoardCoord.y < ibc.boardNum);
-}
-
 vec2 FragCoordToBoardCoord(vec2 fragCoord, vec2 resolution, IgoBoardConf ibc){
   // [0, iResolution.xy] -> [-0.5*iResolution.xy, 0.5*iResolution.xy]
   vec2 centerPxCoord = vec2(fragCoord.x - 0.5*resolution.x, 
@@ -91,9 +99,10 @@ vec2 FragCoordToBoardCoord(vec2 fragCoord, vec2 resolution, IgoBoardConf ibc){
   return (centerPxCoord + vec2(ibc.boardSizePx*0.5)) / ibc.boardCoordToPx;
 }
 
-vec3 DrawCandidateStone(vec2 boardCoord, vec2 mouseInBoardCoord, IgoBoardConf ibc, 
+vec3 DrawCandidateStone(vec2 boardCoord, ivec2 mouseBoardPos, IgoBoardConf ibc, 
                         bool isBlackTurn, vec3 defaultColor){
   vec3 ret = defaultColor;
+  vec2 mouseInBoardCoord = BoardPosToBoardCoord(mouseBoardPos);
   if(length(boardCoord.xy - mouseInBoardCoord.xy)*ibc.boardCoordToPx < ibc.stoneRadiusPx ){
     ret = mix(defaultColor, vec3(isBlackTurn ? 1.0 : 0.0), 0.6);
   }
@@ -102,31 +111,6 @@ vec3 DrawCandidateStone(vec2 boardCoord, vec2 mouseInBoardCoord, IgoBoardConf ib
 
 void UpdateBoard(){
 
-}
-
-// (0.0, 0.0)~(19.0, 19.0) to [1, 一]~[19, 十九]
-ivec2 BoardCoordToBoardPos(vec2 posInBoardCoord){
-  return ivec2(int(floor(posInBoardCoord.x)) + 1,
-               int(floor(posInBoardCoord.y)) + 1);
-}
-// [1, 一]~[19, 十九] to (0.0, 0.0)~(19.0, 19.0)
-vec2 BoardCoordToBoardPos(ivec2 boardPos){
-  return vec2(boardPos) - vec2(0.5);
-}
-
-const float BoardCoordNormalizeScale = 0.05;
-
-// 0~19 to 0.0~1.0
-vec2 BoardCoordToTexVal(vec2 posInBoardCoord){
-  ivec2 boardPos = BoardCoordToBoardPos(posInBoardCoord);
-  return vec2(BoardCoordNormalizeScale*float(boardPos.x), 
-              BoardCoordNormalizeScale*float(boardPos.y));
-}
-
-// 0.0~1.0 to [1, 一]~[19, 十九]
-ivec2 TexValToBoardPos(vec2 texVal){
-  return ivec2(floor(texVal.x/BoardCoordNormalizeScale), 
-               floor(texVal.y/BoardCoordNormalizeScale));
 }
 
 
