@@ -1,3 +1,5 @@
+#iChannel0 "file://./boardBuffer.frag"
+
 precision highp float;
 struct IgoBoardConf {
   float boardNum;
@@ -10,6 +12,16 @@ struct IgoBoardConf {
   float boardCoordToPx;
   float stoneRadiusPx;
 };
+
+const float BOARD_STATE_SPACE = 0.1, 
+            BOARD_STATE_BLACK = 0.2,
+            BOARD_STATE_WHITE = 0.3,
+            BOARD_STATE_OUT = 0.9;
+
+const float MOUSE_DOWN = 0.1, 
+            MOUSE_PRESSING = 0.2,
+            MOUSE_UP = 0.3,
+            MOUSE_NO_PRESS = 0.9;
 
 IgoBoardConf CommonIgoConf(vec2 resolution){
   IgoBoardConf ibc;
@@ -79,21 +91,55 @@ vec4 BoardCoord(vec2 fragCoord, vec2 resolution, vec2 mousePosInFragCoord, IgoBo
   return (centerPxCoord + vec4(ibc.boardSizePx*0.5)) / ibc.boardCoordToPx;
 }
 
-
-vec3 DrawCandidateStone(vec2 boardCoord, vec2 mousePosInBoardCoord, IgoBoardConf ibc, 
+vec3 DrawCandidateStone(vec2 boardCoord, ivec2 boardPos, IgoBoardConf ibc, 
                         bool isBlackTurn, vec3 defaultColor){
-  if(mousePosInBoardCoord.x < 0.0
-      || mousePosInBoardCoord.y < 0.0
-      || mousePosInBoardCoord.x > ibc.boardNum
-      || mousePosInBoardCoord.y > ibc.boardNum){
+  if(boardPos.x < 1 
+      || boardPos.x > int(ibc.boardNum)
+      || boardPos.y < 1
+      || boardPos.y > int(ibc.boardNum)){
     return defaultColor;
   }
-  if(isPixelInStoneArea(mousePosInBoardCoord, boardCoord, ibc)){
+  if(isPixelInStoneArea(vec2(boardPos) - vec2(0.5), boardCoord, ibc)){
     return mix(defaultColor, vec3(isBlackTurn ? 0.0 : 1.0), 0.6);
-  }
+  }  
   return defaultColor;
 }
 
 void UpdateBoard(){
 
+}
+
+vec4 FetchBoardBuffer(vec2 fragCoord){
+  return texelFetch(iChannel0, ivec2(fragCoord.xy), 0);
+}
+
+// [1, 一] ~ [19, 十九]
+ivec2 BoardCoordToBoardPos(vec2 posInBoardCoord){
+  return ivec2(int(floor(posInBoardCoord.x + 1.0)),
+               int(floor(posInBoardCoord.y + 1.0)));
+}
+
+// 0~19 to 0.0~1.0
+const float BoardCoordNormalizeScale = 0.05;
+vec2 BoardCoordToTexVal(vec2 posInBoardCoord){
+  ivec2 boardPos = BoardCoordToBoardPos(posInBoardCoord);
+  return vec2(BoardCoordNormalizeScale*float(boardPos.x), 
+              BoardCoordNormalizeScale*float(boardPos.y));
+}
+
+ivec2 TexValToBoardBufCoord(vec2 texVal){
+  return ivec2(floor(texVal.x/BoardCoordNormalizeScale), 
+               floor(texVal.y/BoardCoordNormalizeScale));
+}
+
+
+// [1, 一] ~ [19, 十九]
+vec4 GetBoardData(ivec2 boardPos){
+  return texelFetch(iChannel0, boardPos, 0);
+}
+
+vec4 GetCurrentStoneData(){
+  vec4 ret = texelFetch(iChannel0, ivec2(0,0), 0);
+  // ret.xy = vec2(TexValToBoardBufCoord(ret.xy));
+  return ret;
 }
