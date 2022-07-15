@@ -112,21 +112,23 @@ void UpdateBoard(){
 
 }
 
-// [1, 一] ~ [19, 十九]
+// (0.0, 0.0)~(19.0, 19.0) to [1, 一]~[19, 十九]
 ivec2 BoardCoordToBoardPos(vec2 posInBoardCoord){
   return ivec2(int(floor(posInBoardCoord.x + 1.0)),
                int(floor(posInBoardCoord.y + 1.0)));
 }
 
-// 0~19 to 0.0~1.0
 const float BoardCoordNormalizeScale = 0.05;
+
+// 0~19 to 0.0~1.0
 vec2 BoardCoordToTexVal(vec2 posInBoardCoord){
   ivec2 boardPos = BoardCoordToBoardPos(posInBoardCoord);
   return vec2(BoardCoordNormalizeScale*float(boardPos.x), 
               BoardCoordNormalizeScale*float(boardPos.y));
 }
 
-ivec2 TexValToBoardBufCoord(vec2 texVal){
+// 0.0~1.0 to [1, 一]~[19, 十九]
+ivec2 TexValToBoardPos(vec2 texVal){
   return ivec2(floor(texVal.x/BoardCoordNormalizeScale), 
                floor(texVal.y/BoardCoordNormalizeScale));
 }
