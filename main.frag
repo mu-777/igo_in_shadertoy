@@ -16,8 +16,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   bool isMousePressing = (currStoneData.z == MOUSE_PRESSING);
   bool isBlackTurn = (currStoneData.w == BOARD_STATE_BLACK);
 
-  outPixel = vec3(currStoneData.z*2.0);
-  outPixel = vec3(currStoneData.xy, 0.0);
+  outPixel = vec3(currStoneData.z == MOUSE_NO_PRESS,
+                  currStoneData.z == MOUSE_PRESSING,
+                  0.0);
 
   outPixel = DrawBoard(boardCoord.xy, ibc, outPixel);
   // if(isMousePressing){

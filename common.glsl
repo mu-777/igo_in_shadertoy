@@ -76,6 +76,11 @@ vec3 DrawBoard(vec2 boardCoord, IgoBoardConf ibc, vec3 defaultColor){
   return ret;
 }
 
+bool IsInBoard(vec2 posInBoardCoord, IgoBoardConf ibc){
+  return (posInBoardCoord.x >= 0.0 && posInBoardCoord.x < ibc.boardNum 
+          && posInBoardCoord.y >= 0.0 && posInBoardCoord.y < ibc.boardNum);
+}
+
 bool isPixelInStoneArea(vec2 targetPosInBoardCoord, vec2 boardCoord, IgoBoardConf ibc){
   return length(boardCoord - (floor(targetPosInBoardCoord) + vec2(0.5)))*ibc.boardCoordToPx < ibc.stoneRadiusPx;
 }
