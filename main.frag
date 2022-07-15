@@ -9,29 +9,29 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   // boardCoord.xy is pixel, boardCoord.zw is mouse.xy
   vec2 boardCoord = FragCoordToBoardCoord(fragCoord.xy, iResolution.xy, ibc);
   vec4 currStoneData = FetchBoardData(ivec2(0,0));
-  
+
+  vec2 mouseInBoardCoord = BoardCoordToBoardPos(TexValToBoardPos(currStoneData.xy));
   float mouseState = currStoneData.z;
   bool isBlackTurn = (currStoneData.w == BOARD_STATE_BLACK);
 
-  outPixel = vec3(currStoneData.z == MOUSE_NO_PRESS,
-                  currStoneData.z == MOUSE_PRESSING,
+  outPixel = vec3(mouseState == MOUSE_NO_PRESS,
+                  mouseState == MOUSE_PRESSING,
                   0.0);
 
   outPixel = DrawBoard(boardCoord.xy, ibc, outPixel);
-  // if(isMousePressing){
-  //   outPixel = DrawCandidateStone(boardCoord.xy, ivec2(currStoneData.xy), ibc, 
-  //                                 isBlackTurn, outPixel);
-  // }
+  if(mouseState == MOUSE_PRESSING){
+    outPixel = DrawCandidateStone(boardCoord.xy, mouseInBoardCoord.xy, ibc, 
+                                  isBlackTurn, outPixel);
+  }
 
   // if(length(boardCoord.xy - boardCoord.zw)*ibc.boardCoordToPx < ibc.stoneRadiusPx ){
-  //   outPixel = mix(outPixel, vec3(isBlackTurn ? 1.0 : 0.0), 0.6);
+  //   outPixel = mix(outPixel, vec3(isBlackTurn ? 1.0 : 0.0), 0.sssss);
   // }
   
   
-  vec2 mouseInBoardCoord = vec2(TexValToBoardPos(currStoneData.xy)) - vec2(0.5);
-  if(length(boardCoord.xy - mouseInBoardCoord.xy)*ibc.boardCoordToPx < ibc.stoneRadiusPx ){
-    outPixel = mix(outPixel, vec3(isBlackTurn ? 1.0 : 0.0), 0.6);
-  }
+//  if(length(boardCoord.xy - mouseInBoardCoord.xy)*ibc.boardCoordToPx < ibc.stoneRadiusPx ){
+//    outPixel = mix(outPixel, vec3(isBlackTurn ? 1.0 : 0.0), 0.6);
+//  }
 
 
   fragColor = vec4(outPixel, 1.0);

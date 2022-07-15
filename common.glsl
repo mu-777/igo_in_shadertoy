@@ -44,8 +44,9 @@ IgoBoardConf CommonIgoConf(vec2 resolution){
 vec3 DrawBoard(vec2 boardCoord, IgoBoardConf ibc, vec3 defaultColor){
   vec3 ret = defaultColor;
   // Draw boardbase
-  if(boardCoord.x > 0.0 && boardCoord.x < ibc.boardNum 
-      && boardCoord.y > 0.0 && boardCoord.y < ibc.boardNum){
+  float offset = 0.2;
+  if(boardCoord.x > 0.0-offset && boardCoord.x < ibc.boardNum+offset 
+      && boardCoord.y > 0.0-offset && boardCoord.y < ibc.boardNum+offset){
     ret = ibc.boardColor;
 
     // Draw star
@@ -81,10 +82,6 @@ bool IsInBoard(vec2 posInBoardCoord, IgoBoardConf ibc){
           && posInBoardCoord.y >= 0.0 && posInBoardCoord.y < ibc.boardNum);
 }
 
-bool isPixelInStoneArea(vec2 targetPosInBoardCoord, vec2 boardCoord, IgoBoardConf ibc){
-  return length(boardCoord - (floor(targetPosInBoardCoord) + vec2(0.5)))*ibc.boardCoordToPx < ibc.stoneRadiusPx;
-}
-
 vec2 FragCoordToBoardCoord(vec2 fragCoord, vec2 resolution, IgoBoardConf ibc){
   // [0, iResolution.xy] -> [-0.5*iResolution.xy, 0.5*iResolution.xy]
   vec2 centerPxCoord = vec2(fragCoord.x - 0.5*resolution.x, 
@@ -94,18 +91,13 @@ vec2 FragCoordToBoardCoord(vec2 fragCoord, vec2 resolution, IgoBoardConf ibc){
   return (centerPxCoord + vec2(ibc.boardSizePx*0.5)) / ibc.boardCoordToPx;
 }
 
-vec3 DrawCandidateStone(vec2 boardCoord, ivec2 boardPos, IgoBoardConf ibc, 
+vec3 DrawCandidateStone(vec2 boardCoord, vec2 mouseInBoardCoord, IgoBoardConf ibc, 
                         bool isBlackTurn, vec3 defaultColor){
-  if(boardPos.x < 1 
-      || boardPos.x > int(ibc.boardNum)
-      || boardPos.y < 1
-      || boardPos.y > int(ibc.boardNum)){
-    return defaultColor;
+  vec3 ret = defaultColor;
+  if(length(boardCoord.xy - mouseInBoardCoord.xy)*ibc.boardCoordToPx < ibc.stoneRadiusPx ){
+    ret = mix(defaultColor, vec3(isBlackTurn ? 1.0 : 0.0), 0.6);
   }
-  if(isPixelInStoneArea(vec2(boardPos) - vec2(0.5), boardCoord, ibc)){
-    return mix(defaultColor, vec3(isBlackTurn ? 0.0 : 1.0), 0.6);
-  }  
-  return defaultColor;
+  return ret;
 }
 
 void UpdateBoard(){
@@ -114,8 +106,12 @@ void UpdateBoard(){
 
 // (0.0, 0.0)~(19.0, 19.0) to [1, 一]~[19, 十九]
 ivec2 BoardCoordToBoardPos(vec2 posInBoardCoord){
-  return ivec2(int(floor(posInBoardCoord.x + 1.0)),
-               int(floor(posInBoardCoord.y + 1.0)));
+  return ivec2(int(floor(posInBoardCoord.x)) + 1,
+               int(floor(posInBoardCoord.y)) + 1);
+}
+// [1, 一]~[19, 十九] to (0.0, 0.0)~(19.0, 19.0)
+vec2 BoardCoordToBoardPos(ivec2 boardPos){
+  return vec2(boardPos) - vec2(0.5);
 }
 
 const float BoardCoordNormalizeScale = 0.05;
