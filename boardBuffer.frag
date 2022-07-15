@@ -1,8 +1,6 @@
-#include "./common.glsl"
-
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-  vec4 outPixel = FetchBoardBuffer(fragCoord);
+  vec4 outPixel = FetchBoardData(ivec2(fragCoord.xy));
 
   float speed = 2.0;
   if(int(fragCoord.x) == 0 || int(fragCoord.y) == 0 ){
@@ -19,7 +17,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   IgoBoardConf ibc = CommonIgoConf(iResolution.xy);
   // vec4 boardCoord = BoardCoord(fragCoord, iResolution.xy, iMouse.xy, ibc);
   // vec2 mousePosInBoardCoord = boardCoord.zw;
-  vec4 currStoneData = GetCurrentStoneData();
+  vec4 currStoneData = FetchBoardData(ivec2(0,0));
   bool isMousePressing = (iMouse.z > 0.0);
   bool isMouseUp = ((currStoneData.z == MOUSE_PRESSING) && !isMousePressing);
 

@@ -1,6 +1,3 @@
-#include "./common.glsl"
-// #iChannel0 "file://./boardBuffer.frag"
-
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
   vec3 backgroundColor = vec3(1.0);
@@ -8,14 +5,14 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   // outPixel = texelFetch(iChannel0, 
   //                       ivec2(0, 0), 
   //                       0).xyz;
-  outPixel = FetchBoardBuffer(vec2(0.0, 0.0)).xyz;
+  outPixel = FetchBoardData(ivec2(0,0)).xyz;
 
   // Conf values
   IgoBoardConf ibc = CommonIgoConf(iResolution.xy);
 
   // boardCoord.xy is pixel, boardCoord.zw is mouse.xy
   vec4 boardCoord = BoardCoord(fragCoord, iResolution.xy, iMouse.xy, ibc);
-  vec4 currStoneData = GetCurrentStoneData();
+  vec4 currStoneData = FetchBoardData(ivec2(0,0));
   bool isMousePressing = (currStoneData.z == MOUSE_PRESSING);
   bool isBlackTurn = (currStoneData.w == BOARD_STATE_BLACK);
 
