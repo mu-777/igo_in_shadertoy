@@ -15,8 +15,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
 
   IgoBoardConf ibc = CommonIgoConf(iResolution.xy);
-  // vec4 boardCoord = BoardCoord(fragCoord, iResolution.xy, iMouse.xy, ibc);
-  // vec2 mousePosInBoardCoord = boardCoord.zw;
+  vec2 mousePosInBoardCoord = FragCoordToBoardCoord(iMouse.xy, iResolution.xy, ibc);
   vec4 currStoneData = FetchBoardData(ivec2(0,0));
   bool isMousePressing = (iMouse.z > 0.0);
   bool isMouseUp = ((currStoneData.z == MOUSE_PRESSING) && !isMousePressing);
@@ -28,7 +27,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
   // Store mouse info in [0, 0]
   if(ivec2(fragCoord.xy) == ivec2(0, 0)){
-    outPixel.xy = iMouse.xy/iChannelResolution[0].xy;
+    // outPixel.xy = iMouse.xy/iChannelResolution[0].xy;
+    outPixel.xy = BoardCoordToTexVal(mousePosInBoardCoord);
 
     float prevMouse = currStoneData.z;
     outPixel.z = (prevMouse == MOUSE_NO_PRESS) && !isMousePressing ? MOUSE_NO_PRESS

@@ -80,15 +80,13 @@ bool isPixelInStoneArea(vec2 targetPosInBoardCoord, vec2 boardCoord, IgoBoardCon
   return length(boardCoord - (floor(targetPosInBoardCoord) + vec2(0.5)))*ibc.boardCoordToPx < ibc.stoneRadiusPx;
 }
 
-vec4 BoardCoord(vec2 fragCoord, vec2 resolution, vec2 mousePosInFragCoord, IgoBoardConf ibc){
+vec2 FragCoordToBoardCoord(vec2 fragCoord, vec2 resolution, IgoBoardConf ibc){
   // [0, iResolution.xy] -> [-0.5*iResolution.xy, 0.5*iResolution.xy]
-  vec4 centerPxCoord = vec4(fragCoord.x - 0.5*resolution.x, 
-                            0.5*resolution.y - fragCoord.y,
-                            mousePosInFragCoord.x - 0.5*resolution.x, 
-                            0.5*resolution.y - mousePosInFragCoord.y);
+  vec2 centerPxCoord = vec2(fragCoord.x - 0.5*resolution.x, 
+                            0.5*resolution.y - fragCoord.y);
   // [-0.5*iResolution.xy, 0.5*iResolution.xy] -> [0, 19.0]
   // boardCoord.xy is pixel, boardCoord.zw is mouse.xy
-  return (centerPxCoord + vec4(ibc.boardSizePx*0.5)) / ibc.boardCoordToPx;
+  return (centerPxCoord + vec2(ibc.boardSizePx*0.5)) / ibc.boardCoordToPx;
 }
 
 vec3 DrawCandidateStone(vec2 boardCoord, ivec2 boardPos, IgoBoardConf ibc, 
