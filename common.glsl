@@ -99,12 +99,12 @@ vec2 FragCoordToBoardCoord(vec2 fragCoord, vec2 resolution, IgoBoardConf ibc){
   return (centerPxCoord + vec2(ibc.boardSizePx*0.5)) / ibc.boardCoordToPx;
 }
 
-vec3 DrawCandidateStone(vec2 boardCoord, ivec2 mouseBoardPos, IgoBoardConf ibc, 
-                        bool isBlackTurn, vec3 defaultColor){
+vec3 DrawStone(vec2 boardCoord, ivec2 targetBoardPos, IgoBoardConf ibc, 
+               bool isBlackTurn, vec3 defaultColor, float alpha){
   vec3 ret = defaultColor;
-  vec2 mouseInBoardCoord = BoardPosToBoardCoord(mouseBoardPos);
-  if(length(boardCoord.xy - mouseInBoardCoord.xy)*ibc.boardCoordToPx < ibc.stoneRadiusPx ){
-    ret = mix(defaultColor, vec3(isBlackTurn ? 1.0 : 0.0), 0.6);
+  vec2 targetInBoardCoord = BoardPosToBoardCoord(targetBoardPos);
+  if(length(boardCoord.xy - targetInBoardCoord.xy)*ibc.boardCoordToPx < ibc.stoneRadiusPx ){
+    ret = mix(defaultColor, vec3(isBlackTurn ? 1.0 : 0.0), alpha);
   }
   return ret;
 }
