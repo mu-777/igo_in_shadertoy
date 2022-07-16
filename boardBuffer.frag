@@ -1,10 +1,12 @@
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-  vec4 outPixel = FetchBoardData(ivec2(fragCoord.xy));
+  ivec2 intFragCoord = ivec2(fragCoord.xy);
+  vec4 outPixel = FetchBoardData(intFragCoord);
 
   IgoBoardConf ibc = CommonIgoConf(iResolution.xy);
 
-  if(!IsInBoard(fragCoord, ibc, 1.0)){
+  if(intFragCoord.x > int(ibc.boardNum)+1
+     || intFragCoord.y > int(ibc.boardNum)+1){
     return;
   }
   
@@ -26,8 +28,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   bool isUpdate = (currMouseState == MOUSE_UP && isPlaceable);
   
   if(isFirstFrame){
-    if(int(fragCoord.x) == 0 || int(fragCoord.x) == int(ibc.boardNum)+1
-           || int(fragCoord.y) == 0 || int(fragCoord.y) == int(ibc.boardNum)+1){
+    if(intFragCoord.x == 0 || intFragCoord.x == int(ibc.boardNum)+1
+           || intFragCoord.y == 0 || intFragCoord.y == int(ibc.boardNum)+1){
       outPixel.w = BOARD_STATE_OUT;
     }
     else{
@@ -36,7 +38,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   }
 
   // Store mouse state in [0, 0]
-  if(ivec2(fragCoord.xy) == ivec2(0, 0)){
+  if(intFragCoord.xy == ivec2(0, 0)){
     if(IsInBoard(mouseInBoardCoord, ibc, 0.0)){
       outPixel.xy = mouseInBoardCoord;
     }    
@@ -45,16 +47,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
                  : !isUpdate ? prevStoneData.w
                  : prevStoneData.w == BOARD_STATE_BLACK ? BOARD_STATE_WHITE : BOARD_STATE_BLACK;
   }
-  // Store outline
-  else if(int(fragCoord.x) == 0
-           || int(fragCoord.y) == 0
-           || int(fragCoord.x) == int(ibc.boardNum)+1
-           || int(fragCoord.y) == int(ibc.boardNum)+1){
-    outPixel.w = BOARD_STATE_OUT;
-  }
   // Store board state
   else{
-    if(isUpdate && ivec2(fragCoord.xy) == mouseBoardPos){
+    if(isUpdate && intFragCoord.xy == mouseBoardPos){
       outPixel.w = prevStoneData.w;
     }
   }

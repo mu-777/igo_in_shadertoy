@@ -25,14 +25,23 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     outPixel = DrawStone(boardCoord.xy, mouseBoardPos.xy, ibc, 
                          isBlackTurn, outPixel, 0.6);
   }
-  
+
   // Draw current stone
-  if(IsInBoard(boardCoord, ibc, 0.0)){
+  if(IsInBoard(boardCoord, ibc, 2.0)){
     ivec2 boardPos = BoardCoordToBoardPos(boardCoord);
     float boardState = FetchBoardData(boardPos).w;
     if(boardState == BOARD_STATE_BLACK || boardState == BOARD_STATE_WHITE){
       outPixel = DrawStone(boardCoord.xy, boardPos.xy, ibc, 
                            boardState == BOARD_STATE_BLACK, outPixel, 0.0);
+    }
+    
+    if(boardState == BOARD_STATE_OUT){
+      outPixel = DrawStone(boardCoord.xy, boardPos.xy, ibc, 
+                           true, outPixel, 0.5);
+    }
+    if(boardState == BOARD_STATE_SPACE){
+      outPixel = DrawStone(boardCoord.xy, boardPos.xy, ibc, 
+                           false, outPixel, 0.5);
     }
   }
   fragColor = vec4(outPixel, 1.0);
