@@ -104,7 +104,7 @@ vec3 DrawStone(vec2 boardCoord, ivec2 targetBoardPos, IgoBoardConf ibc,
   vec3 ret = defaultColor;
   vec2 targetInBoardCoord = BoardPosToBoardCoord(targetBoardPos);
   if(length(boardCoord.xy - targetInBoardCoord.xy)*ibc.boardCoordToPx < ibc.stoneRadiusPx ){
-    ret = mix(defaultColor, vec3(isBlackTurn ? 1.0 : 0.0), alpha);
+    ret = mix(vec3(isBlackTurn ? 0.0 : 1.0), defaultColor, alpha);
   }
   return ret;
 }
