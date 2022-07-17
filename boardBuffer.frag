@@ -17,9 +17,9 @@ bool CheckArround(ivec2 boardPos, int except, out vec4 arround){
          || (arround.w == BOARD_STATE_SPACE);
 }
 
-bool IsArroundByTheOther(ivec2 boardPos, bool isBlack, int except){
+bool IsArroundByTheOther(ivec2 newBoardPos, bool isBlack){
   vec4 arround;
-  if(CheckArround(boardPos, except, arround)){
+  if(CheckArround(newBoardPos, 0, arround)){
     return false;
   }
   float thisSide = isBlack ? BOARD_STATE_BLACK : BOARD_STATE_WHITE;
@@ -27,26 +27,35 @@ bool IsArroundByTheOther(ivec2 boardPos, bool isBlack, int except){
      && (arround.z != thisSide) && (arround.w != thisSide)){
     return true;
   }
+  
+  int checkedLen = 0;
+  ivec2 checked[400];
+  checked[checkedLen++] = newBoardPos;
+  
+  int willCheckLen = 0;
+  ivec2 willCheck[400];
   if(arround.x == thisSide){
-    if(!IsArroundByTheOther(ivec2(boardPos.x, boardPos.y-1), isBlack)){
-      return false;
-    }
+    willCheck[willCheckLen++] = ivec2(newBoardPos.x, newBoardPos.y-1);
   }
   if(arround.y == thisSide){
-    if(!IsArroundByTheOther(ivec2(boardPos.x+1, boardPos.y), isBlack)){
-      return false;
-    }
+    willCheck[willCheckLen++] = ivec2(newBoardPos.x+1, newBoardPos.y);
   }
   if(arround.z == thisSide){
-    if(!IsArroundByTheOther(ivec2(boardPos.x, boardPos.y+1), isBlack)){
-      return false;
-    }
+    willCheck[willCheckLen++] = ivec2(newBoardPos.x, newBoardPos.y+1);
   }
   if(arround.w == thisSide){
-    if(!IsArroundByTheOther(ivec2(boardPos.x-1, boardPos.y), isBlack)){
-      return false;
-    }
-  }  
+    willCheck[willCheckLen++] = ivec2(newBoardPos.x-1, newBoardPos.y);
+  }
+  
+  int cnt = 0;
+  while(cnt != willCheckLen){
+    ivec2 target = willCheck[cnt++];
+    
+    // 1. 自身がchecked と被ってないか確認して，被ってたらcontinue
+    // 2. 周囲がchecked と被ってないか確認して，被ってたらCheckArroundのExceptに入れる
+    // 3. CheckArround して，Spaceがあれば即return false，味方がいればwillCheckに足す（すでにwillCheckに入ってる可能性があるが，自身のchecked確認ではじける）
+  }
+  
   return true;
 }
 
@@ -77,8 +86,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
                     : (prevMouseState == MOUSE_UP) ? MOUSE_NO_PRESS
                     : prevMouseState;
   bool isPlaceable = isFirstFrame 
-                     || (IsSpace(mouseBoardPos) 
-                         && IsArroundByTheOther(mouseBoardPos, prevStoneData.w == BOARD_STATE_BLACK, 0);
+                     || IsSpace(mouseBoardPos);
   bool isUpdate = (currMouseState == MOUSE_UP && isPlaceable);
   
   if(isFirstFrame){
