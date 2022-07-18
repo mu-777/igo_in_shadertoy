@@ -28,7 +28,9 @@ bool CheckAround(ivec2 boardPos, ivec4 except, out vec4 around){
          || (around.w == BOARD_STATE_SPACE);
 }
 
-bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack){
+bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[400] aroundedStones, out int aroundedStonesLen){
+  aroundedStonesLen = 0;
+
   vec4 around;
   if(CheckAround(newBoardPos, ivec4(0), around)){
     return false;
@@ -36,6 +38,7 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack){
   float thisSide = isBlack ? BOARD_STATE_BLACK : BOARD_STATE_WHITE;
   if((around.x != thisSide) && (around.y != thisSide)
      && (around.z != thisSide) && (around.w != thisSide)){
+    aroundedStones[aroundedStonesLen++] = newBoardPos; 
     return true;
   }
   
@@ -110,9 +113,35 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack){
     if(around.w == thisSide){
       willCheck[willCheckLen++] = ivec2(target.x-1, target.y);
     }
-  }  
+  }
+  aroundedStonesLen = checkedLen;
+  aroundedStones = checked;
   return true;
 }
+
+bool CanTakeStones(ivec2 newBoardPos, bool isBlack, out ivec2[400] takenStones, out int takenStonesLen){
+  takenStonesLen = 0;
+  float otherSide = isBlack ? BOARD_STATE_WHITE : BOARD_STATE_BLACK;
+  
+  vec4 around;
+  CheckAround(newBoardPos, ivec4(0), around);
+  for(int i=1; i<5; i++){
+    if(otherSide != (i==1 ? around.x : i==2 ? around.y : i==3 ? around.z : i==4 ? around.w : BOARD_STATE_OUT)){
+      continue;
+    }
+    ivec2 target = OffsetBoardPos(newBoardPos, i);
+    ivec2[400] takenStones_temp;
+    int takenStonesLen_temp;
+    if(IsAroundByTheOther(target, !isBlack, takenStones_temp, takenStonesLen_temp)){
+      for(int j=0; j<takenStonesLen_temp; j++){
+        takenStones[takenStonesLen+j] = takenStones_temp[j];
+      }
+      takenStonesLen = takenStonesLen+takenStonesLen_temp;
+    }    
+  }
+  return (takenStonesLen != 0);
+}
+
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
@@ -134,7 +163,18 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   ivec2 currBoardPos = BoardCoordToBoardPos(currStoneData.xy);
   // currStoneData.w was fliped in BufferA
   bool isBlack = (currStoneData.w == BOARD_STATE_WHITE);
-  if(IsAroundByTheOther(currBoardPos, isBlack)){
+  
+  ivec2[400] takenStones;
+  int takenStonesLen;
+  if(CanTakeStones(currBoardPos, isBlack, takenStones, takenStonesLen)){
+    for(int i=0; i<takenStonesLen; i++){
+      if(intFragCoord.xy == takenStones[i]){
+        // TODO: Count up agehama
+        outPixel.w = BOARD_STATE_SPACE;
+      }
+    }
+  }
+  else if(IsAroundByTheOther(currBoardPos, isBlack, takenStones/*not used*/, takenStonesLen/*not used*/)){
     if(intFragCoord.xy == ivec2(0, 0)){
       outPixel.z = MOUSE_NO_PRESS;
       // keep black turn
