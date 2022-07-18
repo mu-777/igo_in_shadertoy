@@ -3,13 +3,30 @@ bool IsSpace(ivec2 boardPos){
   return (FetchBoardData(boardPos).w == BOARD_STATE_SPACE);
 }
 
+// Top with offsetDir==1, Right with offsetDir==2, Bottom with offsetDir==3, Left with offsetDir==4
+ivec2 OffsetBoardPos(ivec2 boardPos, int offsetDir){
+  if(offsetDir == 1){
+    return ivec2(boardPos.x, boardPos.y-1);
+  }
+  if(offsetDir == 2){
+    return ivec2(boardPos.x+1, boardPos.y);
+  }
+  if(offsetDir == 3){
+    return ivec2(boardPos.x, boardPos.y+1);
+  }
+  if(offsetDir == 4){
+    return ivec2(boardPos.x-1, boardPos.y);
+  }
+  return boardPos;
+}
+
 // true if there is at least one space around boardPos
 // arround.x is Top of boardPos, y is Right, z is Bottom, w is Left
 bool CheckAround(ivec2 boardPos, ivec4 except, out vec4 around){
-  around.x = (except.x == 1) ? BOARD_STATE_OUT : FetchBoardData(ivec2(boardPos.x, boardPos.y-1)).w;
-  around.y = (except.y == 1) ? BOARD_STATE_OUT : FetchBoardData(ivec2(boardPos.x+1, boardPos.y)).w;
-  around.z = (except.z == 1) ? BOARD_STATE_OUT : FetchBoardData(ivec2(boardPos.x, boardPos.y+1)).w;
-  around.w = (except.w == 1) ? BOARD_STATE_OUT : FetchBoardData(ivec2(boardPos.x-1, boardPos.y)).w;
+  around.x = (except.x == 1) ? BOARD_STATE_OUT : FetchBoardData(OffsetBoardPos(boardPos, 1)).w;
+  around.y = (except.y == 1) ? BOARD_STATE_OUT : FetchBoardData(OffsetBoardPos(boardPos, 2)).w;
+  around.z = (except.z == 1) ? BOARD_STATE_OUT : FetchBoardData(OffsetBoardPos(boardPos, 3)).w;
+  around.w = (except.w == 1) ? BOARD_STATE_OUT : FetchBoardData(OffsetBoardPos(boardPos, 4)).w;
   return (around.x == BOARD_STATE_SPACE)
          || (around.y == BOARD_STATE_SPACE)
          || (around.z == BOARD_STATE_SPACE)
@@ -34,16 +51,16 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack){
   int willCheckLen = 0;
   ivec2 willCheck[400];
   if(around.x == thisSide){
-    willCheck[willCheckLen++] = ivec2(newBoardPos.x, newBoardPos.y-1);
+    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 1);
   }
   if(around.y == thisSide){
-    willCheck[willCheckLen++] = ivec2(newBoardPos.x+1, newBoardPos.y);
+    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 2);
   }
   if(around.z == thisSide){
-    willCheck[willCheckLen++] = ivec2(newBoardPos.x, newBoardPos.y+1);
+    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 3);
   }
   if(around.w == thisSide){
-    willCheck[willCheckLen++] = ivec2(newBoardPos.x-1, newBoardPos.y);
+    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 4);
   }
   
   int cnt = 0;   
@@ -59,16 +76,16 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack){
         break;
       }      
       // 2. 周囲がchecked と被ってないか確認して，被ってたらCheckArroundのExceptに入れる
-      else if(checked[i] == ivec2(target.x, target.y-1)){
+      else if(checked[i] == OffsetBoardPos(target, 1)){
         except.x = 1;
       }
-      else if(checked[i] == ivec2(target.x+1, target.y)){
+      else if(checked[i] == OffsetBoardPos(target, 2)){
         except.y = 1;
       }
-      else if(checked[i] == ivec2(target.x, target.y+1)){
+      else if(checked[i] == OffsetBoardPos(target, 3)){
         except.z = 1;
       }
-      else if(checked[i] == ivec2(target.x-1, target.y)){
+      else if(checked[i] == OffsetBoardPos(target, 4)){
         except.w = 1;
       }
     }
@@ -81,6 +98,7 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack){
     if(CheckAround(target, except, around)){
       return false;
     }
+    checked[checkedLen++] = target;
     if((around.x != thisSide) && (around.y != thisSide)
        && (around.z != thisSide) && (around.w != thisSide)){
       continue;
