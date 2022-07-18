@@ -1,4 +1,3 @@
-
 bool IsSpace(ivec2 boardPos){
   return (FetchBoardData(boardPos).w == BOARD_STATE_SPACE);
 }
