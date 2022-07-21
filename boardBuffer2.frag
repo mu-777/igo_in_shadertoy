@@ -159,21 +159,53 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     fragColor = outPixel;
     return;
   }
-  
+
+  vec4 kouData = FetchBoardData(GetKouDataPos(ibc));
+  ivec2 kouBoardPos = ivec2(kouData.xy);
+  float kouTurn = kouData.w;
+
   ivec2 currBoardPos = BoardCoordToBoardPos(currStoneData.xy);
   // currStoneData.w was fliped in BufferA
   bool isBlack = (currStoneData.w == BOARD_STATE_WHITE);
   
   ivec2[400] takenStones;
   int takenStonesLen;
-  if(CanTakeStones(currBoardPos, isBlack, takenStones, takenStonesLen)){
+ 
+  // Check kou
+  if(currBoardPos == kouBoardPos && kouTurn == (isBlack ? BOARD_STATE_BLACK :BOARD_STATE_WHITE )){
+    if(intFragCoord.xy == ivec2(0, 0)){
+      outPixel.z = MOUSE_NO_PRESS;
+      // keep black turn
+      outPixel.w = isBlack ? BOARD_STATE_BLACK : BOARD_STATE_WHITE;
+    }
+    if(intFragCoord.xy == currBoardPos){
+      outPixel.w = BOARD_STATE_SPACE;
+    }
+  }
+  // Check taking stones
+  else if(CanTakeStones(currBoardPos, isBlack, takenStones, takenStonesLen)){
     for(int i=0; i<takenStonesLen; i++){
       if(intFragCoord.xy == takenStones[i]){
-        // TODO: Count up agehama
         outPixel.w = BOARD_STATE_SPACE;
       }
     }
+    if(intFragCoord.xy == GetAgehamaDataPos(ibc)){
+      // Count up agehama
+      if(isBlack){
+        outPixel.x = outPixel.x + float(takenStonesLen);
+      }else{
+        outPixel.y = outPixel.y + float(takenStonesLen);
+      }
+    }
+    if(intFragCoord.xy == GetKouDataPos(ibc)){
+      // Cache kou boardPos
+      if(takenStonesLen == 1){
+        outPixel.xy = vec2(takenStones[0].xy);
+        outPixel.w = isBlack ? BOARD_STATE_WHITE : BOARD_STATE_BLACK;
+      }
+    }   
   }
+  // Check arounded by the other stones
   else if(IsAroundByTheOther(currBoardPos, isBlack, takenStones/*not used*/, takenStonesLen/*not used*/)){
     if(intFragCoord.xy == ivec2(0, 0)){
       outPixel.z = MOUSE_NO_PRESS;
@@ -183,7 +215,15 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     if(intFragCoord.xy == currBoardPos){
       outPixel.w = BOARD_STATE_SPACE;
     }
-  }  
+  }
+  
+  // Reset kou
+  if(kouBoardPos != ivec2(0, 0) && kouTurn != (isBlack ? BOARD_STATE_BLACK :BOARD_STATE_WHITE)){
+    if(intFragCoord.xy == GetKouDataPos(ibc)){
+      outPixel.xy = vec2(0.0, 0.0);
+      outPixel.w = BOARD_STATE_SPACE;
+    }
+  }
   
   fragColor = outPixel;
 }

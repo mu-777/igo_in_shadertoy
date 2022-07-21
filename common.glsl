@@ -109,8 +109,11 @@ vec3 DrawStone(vec2 boardCoord, ivec2 targetBoardPos, IgoBoardConf ibc,
   return ret;
 }
 
-void UpdateBoard(){
-
+ivec2 GetAgehamaDataPos(IgoBoardConf ibc){
+  return ivec2(0, int(ibc.boardNum)+1);
 }
 
+ivec2 GetKouDataPos(IgoBoardConf ibc){
+  return ivec2(int(ibc.boardNum)+1, 0);
+}
 
