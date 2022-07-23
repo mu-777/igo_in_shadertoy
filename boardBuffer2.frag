@@ -1,3 +1,5 @@
+#define ARRAY_SIZE 400
+
 // Top with offsetDir==1, Right with offsetDir==2, Bottom with offsetDir==3, Left with offsetDir==4
 ivec2 OffsetBoardPos(ivec2 boardPos, int offsetDir){
   if(offsetDir == 1){
@@ -28,7 +30,7 @@ bool CheckAround(ivec2 boardPos, ivec4 except, out vec4 around){
          || (around.w == BOARD_STATE_SPACE);
 }
 
-bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[400] aroundedStones, out int aroundedStonesLen){
+bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] aroundedStones, out int aroundedStonesLen){
   aroundedStonesLen = 0;
 
   vec4 around;
@@ -43,11 +45,11 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[400] arounded
   }
   
   int checkedLen = 0;
-  ivec2 checked[400];
+  ivec2 checked[ARRAY_SIZE];
   checked[checkedLen++] = newBoardPos;
   
   int willCheckLen = 0;
-  ivec2 willCheck[400];
+  ivec2 willCheck[ARRAY_SIZE];
   if(around.x == thisSide){
     willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 1);
   }
@@ -119,7 +121,7 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[400] arounded
   return true;
 }
 
-bool CanTakeStones(ivec2 newBoardPos, bool isBlack, out ivec2[400] takenStones, out int takenStonesLen){
+bool CanTakeStones(ivec2 newBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] takenStones, out int takenStonesLen){
   takenStonesLen = 0;
   float otherSide = isBlack ? BOARD_STATE_WHITE : BOARD_STATE_BLACK;
   
@@ -130,7 +132,7 @@ bool CanTakeStones(ivec2 newBoardPos, bool isBlack, out ivec2[400] takenStones, 
       continue;
     }
     ivec2 target = OffsetBoardPos(newBoardPos, i);
-    ivec2[400] takenStones_temp;
+    ivec2[ARRAY_SIZE] takenStones_temp;
     int takenStonesLen_temp;
     if(IsAroundByTheOther(target, !isBlack, takenStones_temp, takenStonesLen_temp)){
       for(int j=0; j<takenStonesLen_temp; j++){
@@ -168,7 +170,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   // currStoneData.w was fliped in BufferA
   bool isBlack = (currStoneData.w == BOARD_STATE_WHITE);
   
-  ivec2[400] takenStones;
+  ivec2[ARRAY_SIZE] takenStones;
   int takenStonesLen;
  
   // Check kou
