@@ -1,3 +1,5 @@
+
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
   vec3 backgroundColor = vec3(sin(iTime*0.01 + fragCoord.x/iResolution.x),
@@ -46,6 +48,11 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 //                           false, outPixel, 0.5);
 //    }
   }
+  
+  outPixel = DrawStone(boardCoord.xy, BoardCoordToBoardPos(ibc.screenRectInBoardCoord.xy), ibc, 
+                       true, outPixel, 0.0);
+  outPixel = DrawStone(boardCoord.xy, BoardCoordToBoardPos(ibc.screenRectInBoardCoord.zw), ibc, 
+                       false, outPixel, 0.0);
   fragColor = vec4(outPixel, 1.0);
 
 }

@@ -11,6 +11,7 @@ struct IgoBoardConf {
   float boardStarPos;
   float boardCoordToPx;
   float stoneRadiusPx;
+  vec4 screenRectInBoardCoord;
 };
 
 const float BOARD_STATE_SPACE = 0.1, 
@@ -38,6 +39,12 @@ IgoBoardConf CommonIgoConf(vec2 resolution){
   ibc.boardCoordToPx = ibc.boardSizePx/ibc.boardNum;
   ibc.boardStarRadiusPx = ibc.boardCoordToPx * 0.15;
   ibc.stoneRadiusPx = ibc.boardCoordToPx * 0.45;
+  
+  float offsetInBoordCoord = 0.5*(ibc.boardNum+1.0);
+  ibc.screenRectInBoardCoord = vec4(-0.5*resolution.x/ibc.boardCoordToPx + offsetInBoordCoord,
+                                    -0.5*resolution.y/ibc.boardCoordToPx + offsetInBoordCoord,
+                                    0.5*resolution.x/ibc.boardCoordToPx + offsetInBoordCoord - 1.0,
+                                    0.5*resolution.y/ibc.boardCoordToPx + offsetInBoordCoord - 1.0);
   return ibc;
 }
 
