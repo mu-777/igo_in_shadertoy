@@ -1,4 +1,5 @@
-#define ARRAY_SIZE 400
+// 19*19-1
+#define ARRAY_SIZE 360
 
 // Top with offsetDir==1, Right with offsetDir==2, Bottom with offsetDir==3, Left with offsetDir==4
 ivec2 OffsetBoardPos(ivec2 boardPos, int offsetDir){
@@ -30,37 +31,38 @@ bool CheckAround(ivec2 boardPos, ivec4 except, out vec4 around){
          || (around.w == BOARD_STATE_SPACE);
 }
 
-bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] aroundedStones, out int aroundedStonesLen){
+bool IsAroundByTheOther(ivec2 targetBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] aroundedStones, out int aroundedStonesLen){
   aroundedStonesLen = 0;
 
   vec4 around;
-  if(CheckAround(newBoardPos, ivec4(0), around)){
+  if(CheckAround(targetBoardPos, ivec4(0), around)){
     return false;
   }
   float thisSide = isBlack ? BOARD_STATE_BLACK : BOARD_STATE_WHITE;
   if((around.x != thisSide) && (around.y != thisSide)
      && (around.z != thisSide) && (around.w != thisSide)){
-    aroundedStones[aroundedStonesLen++] = newBoardPos; 
+    aroundedStones[aroundedStonesLen++] = targetBoardPos; 
     return true;
   }
   
-  int checkedLen = 0;
-  ivec2 checked[ARRAY_SIZE];
-  checked[checkedLen++] = newBoardPos;
+//  int checkedLen = 0;
+//  ivec2 checked[ARRAY_SIZE];
+//  checked[checkedLen++] = targetBoardPos;
+  aroundedStones[aroundedStonesLen++] = targetBoardPos;
   
   int willCheckLen = 0;
   ivec2 willCheck[ARRAY_SIZE];
   if(around.x == thisSide){
-    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 1);
+    willCheck[willCheckLen++] = OffsetBoardPos(targetBoardPos, 1);
   }
   if(around.y == thisSide){
-    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 2);
+    willCheck[willCheckLen++] = OffsetBoardPos(targetBoardPos, 2);
   }
   if(around.z == thisSide){
-    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 3);
+    willCheck[willCheckLen++] = OffsetBoardPos(targetBoardPos, 3);
   }
   if(around.w == thisSide){
-    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 4);
+    willCheck[willCheckLen++] = OffsetBoardPos(targetBoardPos, 4);
   }
   
   int cnt = 0;   
@@ -69,23 +71,23 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] a
 
     bool targetIsChecked = false;
     ivec4 except = ivec4(0);
-    for(int i=0; i<checkedLen+1; i++){
+    for(int i=0; i<aroundedStonesLen+1; i++){
       // 1. 自身がchecked と被ってないか確認して，被ってたら次のwillCheckに移る（continue）
-      if(checked[i] == target){
+      if(aroundedStones[i] == target){
         targetIsChecked = true;
         break;
       }      
       // 2. 周囲がchecked と被ってないか確認して，被ってたらCheckArroundのExceptに入れる
-      else if(checked[i] == OffsetBoardPos(target, 1)){
+      else if(aroundedStones[i] == OffsetBoardPos(target, 1)){
         except.x = 1;
       }
-      else if(checked[i] == OffsetBoardPos(target, 2)){
+      else if(aroundedStones[i] == OffsetBoardPos(target, 2)){
         except.y = 1;
       }
-      else if(checked[i] == OffsetBoardPos(target, 3)){
+      else if(aroundedStones[i] == OffsetBoardPos(target, 3)){
         except.z = 1;
       }
-      else if(checked[i] == OffsetBoardPos(target, 4)){
+      else if(aroundedStones[i] == OffsetBoardPos(target, 4)){
         except.w = 1;
       }
     }
@@ -96,9 +98,10 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] a
     // 3. CheckArround して，Spaceがあれば即return false，味方がいればwillCheckに足す
     //（すでにwillCheckに入ってる可能性があるが，自身のchecked確認ではじける）
     if(CheckAround(target, except, around)){
+      aroundedStonesLen = 0;
       return false;
     }
-    checked[checkedLen++] = target;
+    aroundedStones[aroundedStonesLen++] = target;
     if((around.x != thisSide) && (around.y != thisSide)
        && (around.z != thisSide) && (around.w != thisSide)){
       continue;
@@ -116,8 +119,8 @@ bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] a
       willCheck[willCheckLen++] = ivec2(target.x-1, target.y);
     }
   }
-  aroundedStonesLen = checkedLen;
-  aroundedStones = checked;
+//  aroundedStonesLen = checkedLen;
+//  aroundedStones = checked;
   return true;
 }
 
