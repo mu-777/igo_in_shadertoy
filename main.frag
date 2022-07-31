@@ -32,15 +32,6 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
       outPixel = DrawStone(boardCoord.xy, boardPos.xy, ibc, 
                            boardState == BOARD_STATE_BLACK, outPixel, 0.0);
     }
-    
-//    if(boardState == BOARD_STATE_OUT){
-//      outPixel = DrawStone(boardCoord.xy, boardPos.xy, ibc, 
-//                           true, outPixel, 0.5);
-//    }
-//    if(boardState == BOARD_STATE_SPACE){
-//      outPixel = DrawStone(boardCoord.xy, boardPos.xy, ibc, 
-//                           false, outPixel, 0.5);
-//    }
   }
   
   vec4 agehamaCache = FetchBoardData(GetAgehamaDataPos(ibc));
@@ -54,10 +45,5 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
      && (-1-luScrBoadPos.x+1)*(boardPos.y-luScrBoadPos.y) + (boardPos.x - luScrBoadPos.x) < int(agehamaCache.y)){
     outPixel = DrawStone(boardCoord.xy, boardPos, ibc, true, outPixel, 0.0);
   }
-//  outPixel = DrawStone(boardCoord.xy, luScrBoadPos, ibc, 
-//                       true, outPixel, 0.0);
-//  outPixel = DrawStone(boardCoord.xy, rbScrBoadPos, ibc, 
-//                       false, outPixel, 0.0);
   fragColor = vec4(outPixel, 1.0);
-
 }
