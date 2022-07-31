@@ -17,10 +17,6 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   float mouseState = currStoneData.z;
   bool isBlackTurn = (currStoneData.w == BOARD_STATE_BLACK);
 
-//  outPixel = vec3(currStoneData.w == BOARD_STATE_BLACK,
-//                  currStoneData.w == BOARD_STATE_WHITE,
-//                  0.0);
-
   outPixel = DrawBoard(boardCoord.xy, ibc, outPixel);
   
   // Draw candidate stone

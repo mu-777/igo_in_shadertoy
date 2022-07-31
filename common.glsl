@@ -124,3 +124,6 @@ ivec2 GetKouDataPos(IgoBoardConf ibc){
   return ivec2(int(ibc.boardNum)+1, 0);
 }
 
+ivec2 GetBufferDataPos(IgoBoardConf ibc){
+  return ivec2(int(ibc.boardNum)+1, int(ibc.boardNum)+1);
+}

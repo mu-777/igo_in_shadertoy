@@ -1,5 +1,4 @@
-// 19*19-1
-#define ARRAY_SIZE 360
+#define ARRAY_SIZE 361
 
 // Top with offsetDir==1, Right with offsetDir==2, Bottom with offsetDir==3, Left with offsetDir==4
 ivec2 OffsetBoardPos(ivec2 boardPos, int offsetDir){
@@ -31,38 +30,38 @@ bool CheckAround(ivec2 boardPos, ivec4 except, out vec4 around){
          || (around.w == BOARD_STATE_SPACE);
 }
 
-bool IsAroundByTheOther(ivec2 targetBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] aroundedStones, out int aroundedStonesLen){
+bool IsAroundByTheOther(ivec2 newBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] aroundedStones, out int aroundedStonesLen){
   aroundedStonesLen = 0;
 
   vec4 around;
-  if(CheckAround(targetBoardPos, ivec4(0), around)){
+  if(CheckAround(newBoardPos, ivec4(0), around)){
     return false;
   }
   float thisSide = isBlack ? BOARD_STATE_BLACK : BOARD_STATE_WHITE;
   if((around.x != thisSide) && (around.y != thisSide)
      && (around.z != thisSide) && (around.w != thisSide)){
-    aroundedStones[aroundedStonesLen++] = targetBoardPos; 
+    aroundedStones[aroundedStonesLen++] = newBoardPos; 
     return true;
   }
   
 //  int checkedLen = 0;
 //  ivec2 checked[ARRAY_SIZE];
-//  checked[checkedLen++] = targetBoardPos;
-  aroundedStones[aroundedStonesLen++] = targetBoardPos;
+//  checked[checkedLen++] = newBoardPos;
+  aroundedStones[aroundedStonesLen++] = newBoardPos;
   
   int willCheckLen = 0;
   ivec2 willCheck[ARRAY_SIZE];
   if(around.x == thisSide){
-    willCheck[willCheckLen++] = OffsetBoardPos(targetBoardPos, 1);
+    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 1);
   }
   if(around.y == thisSide){
-    willCheck[willCheckLen++] = OffsetBoardPos(targetBoardPos, 2);
+    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 2);
   }
   if(around.z == thisSide){
-    willCheck[willCheckLen++] = OffsetBoardPos(targetBoardPos, 3);
+    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 3);
   }
   if(around.w == thisSide){
-    willCheck[willCheckLen++] = OffsetBoardPos(targetBoardPos, 4);
+    willCheck[willCheckLen++] = OffsetBoardPos(newBoardPos, 4);
   }
   
   int cnt = 0;   
@@ -147,7 +146,6 @@ bool CanTakeStones(ivec2 newBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] takenS
   return (takenStonesLen != 0);
 }
 
-
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
   ivec2 intFragCoord = ivec2(fragCoord.xy);
@@ -159,12 +157,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
      || intFragCoord.y > int(ibc.boardNum)+1){
     return;
   }
-  vec4 currStoneData = FetchBoardData(ivec2(0,0));
-  if(currStoneData.z != MOUSE_UP){
+  // Update BufferB only when BufferA is updated
+  if(FetchBoardData(GetBufferDataPos(ibc)).w != 1.0){
     fragColor = outPixel;
     return;
   }
-
+  
+  vec4 currStoneData = FetchBoardData(ivec2(0,0));
   vec4 kouData = FetchBoardData(GetKouDataPos(ibc));
   ivec2 kouBoardPos = ivec2(kouData.xy);
   float kouTurn = kouData.w;
@@ -202,12 +201,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         outPixel.y = outPixel.y + float(takenStonesLen);
       }
     }
-    if(intFragCoord.xy == GetKouDataPos(ibc)){
-      // Cache kou boardPos
-      if(takenStonesLen == 1){
-        outPixel.xy = vec2(takenStones[0].xy);
-        outPixel.w = isBlack ? BOARD_STATE_WHITE : BOARD_STATE_BLACK;
-      }
+    // Cache kou boardPos
+    if(intFragCoord.xy == GetKouDataPos(ibc) && takenStonesLen == 1){
+      outPixel.xy = vec2(takenStones[0].xy);
+      outPixel.w = isBlack ? BOARD_STATE_WHITE : BOARD_STATE_BLACK;
     }   
   }
   // Check arounded by the other stones

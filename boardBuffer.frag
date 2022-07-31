@@ -1,5 +1,7 @@
-bool IsSpace(ivec2 boardPos){
-  return (FetchBoardData(boardPos).w == BOARD_STATE_SPACE);
+bool IsPlaceable(vec2 mouseInBoardCoord, IgoBoardConf ibc){
+  return (IsInBoard(mouseInBoardCoord, ibc, 0.0) // The placing pos is in the board or not
+          && FetchBoardData(BoardCoordToBoardPos(mouseInBoardCoord)).w == BOARD_STATE_SPACE // The placing pos is SPACE or not
+         );
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
@@ -28,10 +30,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
                     : (prevMouseState == MOUSE_DOWN || prevMouseState == MOUSE_PRESSING) && !isMousePressing ? MOUSE_UP
                     : (prevMouseState == MOUSE_UP) ? MOUSE_NO_PRESS
                     : prevMouseState;
-  bool isPlaceable = isFirstFrame 
-                     || (IsSpace(mouseBoardPos) 
-//                         && !IsAroundByTheOther(mouseBoardPos, prevStoneData.w == BOARD_STATE_BLACK)
-                         );
+  bool isPlaceable = isFirstFrame || IsPlaceable(mouseInBoardCoord, ibc);
   bool isUpdate = (currMouseState == MOUSE_UP && isPlaceable);
   
   if(isFirstFrame){
@@ -53,6 +52,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     outPixel.w = isFirstFrame ? BOARD_STATE_BLACK 
                  : !isUpdate ? prevStoneData.w
                  : prevStoneData.w == BOARD_STATE_BLACK ? BOARD_STATE_WHITE : BOARD_STATE_BLACK;
+  }
+  else if(intFragCoord.xy == GetBufferDataPos(ibc)){
+    outPixel.w = isUpdate ? 1.0 : 0.0;
   }
   // Store board state
   else{
