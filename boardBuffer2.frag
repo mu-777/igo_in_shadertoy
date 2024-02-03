@@ -136,11 +136,22 @@ bool CanTakeStones(ivec2 newBoardPos, bool isBlack, out ivec2[ARRAY_SIZE] takenS
     ivec2 target = OffsetBoardPos(newBoardPos, i);
     ivec2[ARRAY_SIZE] takenStones_temp;
     int takenStonesLen_temp;
+    
+    bool tempTakenStonesAlreadyIncluded = false;
     if(IsAroundByTheOther(target, !isBlack, takenStones_temp, takenStonesLen_temp)){
+      // 既にチェック済みの石を入れないようにする（newBoardPosの4方向を独立に評価しているが、繋がっているときがある）
+      for(int j=0; j<takenStonesLen; j++){
+        if(takenStones[j] == takenStones_temp[0]){
+          tempTakenStonesAlreadyIncluded = true;
+          break;
+        }
+      }
+      if(!tempTakenStonesAlreadyIncluded){
       for(int j=0; j<takenStonesLen_temp; j++){
         takenStones[takenStonesLen+j] = takenStones_temp[j];
       }
       takenStonesLen = takenStonesLen+takenStonesLen_temp;
+      }
     }    
   }
   return (takenStonesLen != 0);
@@ -187,6 +198,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     }
   }
   // Check taking stones
+  // 相手石に囲まれていても石が取れるなら置くことができるので、囲まれているかの確認の前に取れるかを確認する必要がある
   else if(CanTakeStones(currBoardPos, isBlack, takenStones, takenStonesLen)){
     for(int i=0; i<takenStonesLen; i++){
       if(intFragCoord.xy == takenStones[i]){
@@ -220,8 +232,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   }
   
   // Reset kou
-  if(kouBoardPos != ivec2(0, 0) && kouTurn != (isBlack ? BOARD_STATE_BLACK :BOARD_STATE_WHITE)){
-    if(intFragCoord.xy == GetKouDataPos(ibc)){
+  if(intFragCoord.xy == GetKouDataPos(ibc)){
+    if(kouBoardPos != ivec2(0, 0) && kouTurn != (isBlack ? BOARD_STATE_BLACK :BOARD_STATE_WHITE)){
       outPixel.xy = vec2(0.0, 0.0);
       outPixel.w = BOARD_STATE_SPACE;
     }
